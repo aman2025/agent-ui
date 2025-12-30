@@ -8,6 +8,41 @@ The core innovation is the VM2 Component system—a secure, whitelist-based appr
 
 ## Architecture
 
+### Project Setup
+
+The project files are generated manually (not using `npx create-next-app`). All initial project configuration files, Next.js structure, and shadcn/ui components are created directly by the implementation process.
+
+**Manual File Generation Includes:**
+- `package.json` with all dependencies
+- `next.config.js` configuration
+- `tailwind.config.js` with shadcn/ui preset
+- `jsconfig.json` for path aliases
+- `app/` directory structure (layout.jsx, page.jsx, globals.css)
+- `components/ui/` shadcn components (button, input, select, checkbox, alert, table, card)
+- `.env.example` for environment variables
+
+**Key Dependencies:**
+```json
+{
+  "dependencies": {
+    "next": "14.x",
+    "react": "^18",
+    "react-dom": "^18",
+    "@mistralai/mistralai": "^1.x",
+    "zustand": "^4.x",
+    "lucide-react": "^0.x",
+    "class-variance-authority": "^0.x",
+    "clsx": "^2.x",
+    "tailwind-merge": "^2.x"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.x",
+    "postcss": "^8.x",
+    "autoprefixer": "^10.x"
+  }
+}
+```
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           CLIENT (Browser)                               │
@@ -838,6 +873,72 @@ class ReActAgent {
     };
   }
 }
+```
+
+### LLM Client
+
+```javascript
+// lib/llm/client.js
+
+import Mistral from '@mistralai/mistralai';
+
+/**
+ * Mistral AI client configuration
+ * Note: stream is set to false - no SSE streaming
+ */
+class MistralClient {
+  constructor(apiKey) {
+    this.client = new Mistral({ apiKey });
+    this.model = 'mistral-large-latest';
+  }
+
+  /**
+   * Send chat request to Mistral AI
+   * @param {Object} options - Chat options
+   * @param {string} options.systemPrompt - System prompt
+   * @param {string} options.userPrompt - User prompt
+   * @param {string} options.responseFormat - Expected response format
+   * @returns {Promise<Object>}
+   */
+  async chat({ systemPrompt, userPrompt, responseFormat = 'json' }) {
+    try {
+      const response = await this.client.chat.complete({
+        model: this.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        responseFormat: responseFormat === 'json' 
+          ? { type: 'json_object' } 
+          : undefined,
+        stream: false  // No SSE streaming - wait for complete response
+      });
+
+      const content = response.choices[0]?.message?.content;
+      
+      if (responseFormat === 'json') {
+        return JSON.parse(content);
+      }
+      
+      return { content };
+    } catch (error) {
+      if (error.status === 429) {
+        throw {
+          code: 'RATE_LIMITED',
+          message: 'Rate limit exceeded',
+          details: { retryAfter: error.headers?.['retry-after'] }
+        };
+      }
+      throw {
+        code: 'LLM_CONNECTION',
+        message: error.message || 'Failed to connect to LLM',
+        details: { error }
+      };
+    }
+  }
+}
+
+export default MistralClient;
 ```
 
 ### State Store

@@ -7,20 +7,36 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
 ## Tasks
 
 - [ ] 1. Project Setup and Configuration
-  - Initialize Next.js 14 project with App Router, don't use ```npx create-next-app@14``` to initial project.
-  - Install dependencies: shadcn/ui, Tailwind CSS, Lucide React, Zustand, Mistral AI SDK
-  - Configure environment variables for Mistral API
-  - Set up project structure as defined in design
+  - Create `package.json` with all dependencies (Next.js 14, React, Mistral AI SDK, Zustand, Tailwind CSS, Lucide React)
+  - Create `next.config.js` configuration
+  - Create `tailwind.config.js` with shadcn/ui preset
+  - Create `postcss.config.js`
+  - Create `jsconfig.json` for path aliases
+  - Create `.env.example` with MISTRAL_API_KEY placeholder
+  - Create `app/globals.css` with Tailwind directives and CSS variables
+  - Create `app/layout.jsx` root layout
+  - Create `lib/utils.js` with cn() utility function
   - _Requirements: 12.1, 12.2_
 
-- [ ] 2. VM2 Component Schema and Parser
-  - [ ] 2.1 Create VM2 schema definitions
+- [ ] 2. Create shadcn/ui Base Components
+  - Create `components/ui/button.jsx`
+  - Create `components/ui/input.jsx`
+  - Create `components/ui/select.jsx`
+  - Create `components/ui/checkbox.jsx`
+  - Create `components/ui/alert.jsx`
+  - Create `components/ui/table.jsx`
+  - Create `components/ui/card.jsx`
+  - Create `components/ui/label.jsx`
+  - _Requirements: 4.2_
+
+- [ ] 3. VM2 Component Schema and Parser
+  - [ ] 3.1 Create VM2 schema definitions
     - Define component type constants and whitelist in `lib/vm2/schema.js`
     - Define JSON schema structure for surfaceUpdate
     - Export schema validation utilities
     - _Requirements: 2.1, 3.1_
 
-  - [ ] 2.2 Implement VM2 Parser
+  - [ ] 3.2 Implement VM2 Parser
     - Create `lib/vm2/parser.js` with parse() function
     - Implement JSON parsing with error handling
     - Implement schema validation against VM2 structure
@@ -29,19 +45,19 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
     - Implement print() function for JSON serialization
     - _Requirements: 2.2, 2.3, 2.4, 2.5, 3.2, 3.3, 3.5_
 
-  - [ ] 2.3 Implement Component Reference Resolution
+  - [ ] 3.3 Implement Component Reference Resolution
     - Add reference resolution for child components
     - Validate all references point to existing IDs
     - Return errors for invalid references
     - _Requirements: 2.6_
 
-- [ ] 3. Component Catalog and Renderers
-  - [ ] 3.1 Create Component Catalog
+- [ ] 4. Component Catalog and Renderers
+  - [ ] 4.1 Create Component Catalog
     - Create `lib/vm2/catalog.js` with whitelist and lookup functions
     - Implement isWhitelisted() and getComponent() functions
     - _Requirements: 3.1, 3.4_
 
-  - [ ] 3.2 Implement VM2 UI Components
+  - [ ] 4.2 Implement VM2 UI Components
     - Create `components/vm2/TextInput.jsx` with state binding
     - Create `components/vm2/Select.jsx` with options rendering
     - Create `components/vm2/Checkbox.jsx` with state binding
@@ -51,7 +67,7 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
     - Create `components/vm2/Button.jsx` with action handler and child reference
     - _Requirements: 4.2, 4.3, 4.4, 4.5_
 
-  - [ ] 3.3 Implement VM2 Renderer
+  - [ ] 4.3 Implement VM2 Renderer
     - Create `components/vm2/Renderer.jsx`
     - Build component map from flat list
     - Resolve child references
@@ -60,8 +76,8 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
     - Attach action handlers to buttons
     - _Requirements: 4.1, 4.5_
 
-- [ ] 4. Tool System
-  - [ ] 4.1 Implement Tool Registry
+- [ ] 5. Tool System
+  - [ ] 5.1 Implement Tool Registry
     - Create `lib/tools/registry.js` with ToolRegistry class
     - Implement register() with validation
     - Implement get() for retrieval by action_id
@@ -69,69 +85,69 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
     - Implement getPromptDefinitions() for prompt generation
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6_
 
-  - [ ] 4.2 Implement Action Router
+  - [ ] 5.2 Implement Action Router
     - Create `lib/tools/router.js` with ActionRouter class
     - Implement route() to match action_id to tools
     - Implement parameter validation
     - Return structured results and errors
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-  - [ ] 4.3 Create Example Tool Definition
+  - [ ] 5.3 Create Example Tool Definition
     - Create `lib/tools/definitions/createInstance.js` as example
     - Define name, action_id, parameters, handler
     - Register with tool registry
     - _Requirements: 5.1_
 
-- [ ] 5. Prompt System
-  - [ ] 5.1 Create Base System Prompt
+- [ ] 6. Prompt System
+  - [ ] 6.1 Create Base System Prompt
     - Create `lib/prompts/base.js`
     - Define agent identity and behavioral rules
     - Define JSON-only response format
     - Define component generation rules
     - _Requirements: 7.3_
 
-  - [ ] 5.2 Create UI Schema Prompt
+  - [ ] 6.2 Create UI Schema Prompt
     - Create `lib/prompts/ui-schema.js`
     - Define component whitelist with type definitions
     - Include component property schemas
     - _Requirements: 7.4_
 
-  - [ ] 5.3 Create Tools Prompt Generator
+  - [ ] 6.3 Create Tools Prompt Generator
     - Create `lib/prompts/tools.js`
     - Generate tool definitions from registry
     - Format for LLM consumption
     - _Requirements: 7.5_
 
-  - [ ] 5.4 Create Workflow Templates
+  - [ ] 6.4 Create Workflow Templates
     - Create `lib/prompts/workflows.js`
     - Define example workflow templates
     - Include step sequences with ui_hints
     - _Requirements: 7.6, 8.1_
 
-  - [ ] 5.5 Create Few-Shot Examples
+  - [ ] 6.5 Create Few-Shot Examples
     - Create `lib/prompts/examples.js`
     - Add examples for initial form generation
     - Add examples for success result display
     - Add examples for error handling UI
     - _Requirements: 7.1_
 
-  - [ ] 5.6 Implement Prompt Composer
+  - [ ] 6.6 Implement Prompt Composer
     - Create `lib/prompts/composer.js`
     - Implement composeSystemPrompt() assembling all layers
     - Implement composeUserPrompt() with context inclusion
     - _Requirements: 7.1, 7.2_
 
-- [ ] 6. LLM Client
-  - [ ] 6.1 Implement Mistral Client
+- [ ] 7. LLM Client
+  - [ ] 7.1 Implement Mistral Client
     - Create `lib/llm/client.js`
-    - Configure Mistral AI connection
+    - Configure Mistral AI connection with stream: false (no SSE)
     - Implement chat() method with prompt handling
     - Implement JSON response extraction
     - Implement error handling with structured errors
     - _Requirements: 11.1, 11.2, 11.3, 11.4_
 
-- [ ] 7. State Management
-  - [ ] 7.1 Implement Zustand Store
+- [ ] 8. State Management
+  - [ ] 8.1 Implement Zustand Store
     - Create `store/agentStore.js`
     - Implement currentUI state and setUI action
     - Implement formValues state and setFormValue action
@@ -140,45 +156,45 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
     - Implement resetToDefault action
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [ ] 8. ReAct Agent
-  - [ ] 8.1 Implement ReAct Agent Core
+- [ ] 9. ReAct Agent
+  - [ ] 9.1 Implement ReAct Agent Core
     - Create `lib/agent/react.js`
     - Define AgentState and DecisionType constants
     - Implement constructor with dependencies
     - _Requirements: 1.1_
 
-  - [ ] 8.2 Implement Process Methods
+  - [ ] 9.2 Implement Process Methods
     - Implement process() for user query handling
     - Implement processAction() for form submission handling
     - Implement retry loop with max retries
     - _Requirements: 1.1, 1.4_
 
-  - [ ] 8.3 Implement ReAct Loop Phases
+  - [ ] 9.3 Implement ReAct Loop Phases
     - Implement reason() phase for intent analysis
     - Implement act() phase for UI generation
     - Implement observe() phase for result evaluation
     - Implement decide() phase for next action determination
     - _Requirements: 1.1, 1.2, 1.3_
 
-  - [ ] 8.4 Implement UI Generation Methods
+  - [ ] 9.4 Implement UI Generation Methods
     - Implement generateResultUI() for success responses
     - Implement generateNextStepUI() for continuation
     - Implement generateErrorUI() for error responses
     - Implement inferAdjustments() for retry logic
     - _Requirements: 1.3, 1.4_
 
-  - [ ] 8.5 Implement Context Management
+  - [ ] 9.5 Implement Context Management
     - Implement updateContext() for history tracking
     - Implement updateContextForRetry() for retry info
     - _Requirements: 1.5_
 
-- [ ] 9. Checkpoint - Core Logic Complete
+- [ ] 10. Checkpoint - Core Logic Complete
   - Ensure all core modules are implemented
   - Verify imports and exports are correct
   - Ask the user if questions arise
 
-- [ ] 10. API Routes
-  - [ ] 10.1 Implement Agent API Route
+- [ ] 11. API Routes
+  - [ ] 11.1 Implement Agent API Route
     - Create `app/api/agent/route.js`
     - Handle POST for user queries
     - Handle POST for form submissions with action_id
@@ -186,57 +202,57 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
     - Handle errors with appropriate status codes
     - _Requirements: 12.1, 12.2, 12.4_
 
-  - [ ] 10.2 Implement Tools API Route
+  - [ ] 11.2 Implement Tools API Route
     - Create `app/api/tools/route.js`
     - Handle tool execution requests
     - Return structured results
     - _Requirements: 12.3, 12.4_
 
-- [ ] 11. Frontend Components
-  - [ ] 11.1 Create Main Page Layout
+- [ ] 12. Frontend Components
+  - [ ] 12.1 Create Main Page Layout
     - Create `app/layout.jsx` with providers
     - Create `app/page.jsx` with main container
     - _Requirements: 10.1_
 
-  - [ ] 11.2 Implement Default View
+  - [ ] 12.2 Implement Default View
     - Create input field component
     - Create send button component
     - Handle query submission
     - _Requirements: 10.1_
 
-  - [ ] 11.3 Implement Dynamic View
+  - [ ] 12.3 Implement Dynamic View
     - Integrate VM2 Renderer
     - Handle UI replacement on agent response
     - Handle form submission with action_id
     - _Requirements: 10.2, 10.3_
 
-  - [ ] 11.4 Implement Loading State
+  - [ ] 12.4 Implement Loading State
     - Add loading indicator during requests
     - Disable interactions while loading
     - _Requirements: 10.5_
 
-  - [ ] 11.5 Implement Reset Functionality
+  - [ ] 12.5 Implement Reset Functionality
     - Add return to default view option
     - Clear state on reset
     - _Requirements: 10.4_
 
-- [ ] 12. Integration and Wiring
-  - [ ] 12.1 Wire Agent to API Routes
+- [ ] 13. Integration and Wiring
+  - [ ] 13.1 Wire Agent to API Routes
     - Initialize agent with all dependencies in API routes
     - Connect prompt composer, router, LLM client
     - _Requirements: 12.1, 12.2_
 
-  - [ ] 12.2 Wire Frontend to API
+  - [ ] 13.2 Wire Frontend to API
     - Connect page components to API endpoints
     - Handle responses and update store
     - _Requirements: 10.2, 10.3_
 
-  - [ ] 12.3 Register Tools
+  - [ ] 13.3 Register Tools
     - Register example tools with registry
     - Verify tool execution flow
     - _Requirements: 5.1_
 
-- [ ] 13. Final Checkpoint
+- [ ] 14. Final Checkpoint
   - Ensure all components are integrated
   - Verify end-to-end flow works
   - Ask the user if questions arise

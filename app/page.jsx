@@ -21,6 +21,8 @@ import useAgentStore from '@/store/agentStore';
  */
 export default function Home() {
   const [query, setQuery] = React.useState('');
+  // Track agent context for workflow continuity (Requirement 12.5)
+  const [agentContext, setAgentContext] = React.useState({});
   
   // Zustand store state and actions
   const currentUI = useAgentStore((state) => state.currentUI);
@@ -47,15 +49,24 @@ export default function Home() {
       const response = await fetch('/api/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: query.trim() })
+        body: JSON.stringify({ 
+          query: query.trim(),
+          context: agentContext
+        })
       });
       
       const data = await response.json();
       
-      if (data.ui) {
+      if (data.success && data.ui) {
         // Replace default view with agent-generated UI (Requirement 10.2)
         setUI(data.ui);
+        // Update context for workflow continuity (Requirement 12.5)
+        if (data.context) {
+          setAgentContext(data.context);
+        }
         addToHistory({ type: 'query', query: query.trim(), response: data });
+      } else if (!data.success && data.error) {
+        console.error('Agent error:', data.error);
       }
       
       setQuery('');
@@ -89,16 +100,23 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action_id: actionId,
-          formData: formValues
+          formData: formValues,
+          context: agentContext
         })
       });
       
       const data = await response.json();
       
-      if (data.ui) {
+      if (data.success && data.ui) {
         // Replace previous UI with new UI (Requirement 10.3)
         setUI(data.ui);
+        // Update context for workflow continuity (Requirement 12.5)
+        if (data.context) {
+          setAgentContext(data.context);
+        }
         addToHistory({ type: 'action', actionId, formData: formValues, response: data });
+      } else if (!data.success && data.error) {
+        console.error('Agent error:', data.error);
       }
     } catch (error) {
       console.error('Failed to execute action:', error);
@@ -113,6 +131,7 @@ export default function Home() {
    */
   const handleReset = () => {
     resetToDefault();
+    setAgentContext({});
     setQuery('');
   };
 

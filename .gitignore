@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.env.local
+dist/
+coverage/
+.next
+out
+temp
+.augment-guidelines
+docs
+.kiro/specs/

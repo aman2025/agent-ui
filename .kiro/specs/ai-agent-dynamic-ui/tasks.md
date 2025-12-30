@@ -188,13 +188,13 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
     - Implement updateContextForRetry() for retry info
     - _Requirements: 1.5_
 
-- [ ] 10. Checkpoint - Core Logic Complete
+- [x] 10. Checkpoint - Core Logic Complete
   - Ensure all core modules are implemented
   - Verify imports and exports are correct
   - Ask the user if questions arise
 
-- [ ] 11. API Routes
-  - [ ] 11.1 Implement Agent API Route
+- [x] 11. API Routes
+  - [x] 11.1 Implement Agent API Route
     - Create `app/api/agent/route.js`
     - Handle POST for user queries
     - Handle POST for form submissions with action_id
@@ -202,7 +202,7 @@ This implementation plan breaks down the AI Agent Dynamic UI application into di
     - Handle errors with appropriate status codes
     - _Requirements: 12.1, 12.2, 12.4_
 
-  - [ ] 11.2 Implement Tools API Route
+  - [x] 11.2 Implement Tools API Route
     - Create `app/api/tools/route.js`
     - Handle tool execution requests
     - Return structured results

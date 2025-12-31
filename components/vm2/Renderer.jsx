@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { getComponentType } from '@/lib/vm2/schema';
 import { isWhitelisted } from '@/lib/vm2/catalog';
+import { resolveBinding, isPathBinding } from '@/lib/vm2/dataBinding';
 
 // Import VM2 components
 import { TextInput } from './TextInput';
@@ -51,11 +52,12 @@ function buildComponentMap(components) {
  * @param {Object} componentDef - Component definition { id, type, props }
  * @param {Map} componentMap - Map of all components by ID
  * @param {Object} formValues - Current form values from state
+ * @param {Object} dataModel - Data model for path-based bindings
  * @param {Function} onValueChange - Callback for form value changes
  * @param {Function} onAction - Callback for button actions
  * @returns {React.ReactElement | null}
  */
-function renderComponent(componentDef, componentMap, formValues, onValueChange, onAction) {
+function renderComponent(componentDef, componentMap, formValues, dataModel, onValueChange, onAction) {
   const { id, type, props } = componentDef;
   
   // Check if component type is whitelisted
@@ -82,17 +84,33 @@ function renderComponent(componentDef, componentMap, formValues, onValueChange, 
     }
   }
   
-  // Handle Table component - bind data to state
+  // Handle Table component - resolve data binding from dataModel or formValues
   if (type === 'Table') {
-    const path = props.data?.path;
-    if (path) {
-      componentProps.currentData = formValues[path] ?? [];
+    if (isPathBinding(props.data)) {
+      // Resolve path from dataModel first, then fall back to formValues
+      const resolvedData = resolveBinding(props.data, dataModel);
+      componentProps.currentData = resolvedData ?? formValues[props.data.path] ?? [];
+    } else if (Array.isArray(props.data)) {
+      // Direct array data
+      componentProps.currentData = props.data;
+    }
+  }
+
+  // Handle Text component - resolve text binding
+  if (type === 'Text') {
+    if (isPathBinding(props.text)) {
+      componentProps.text = resolveBinding(props.text, dataModel) ?? props.text;
     }
   }
   
   // Handle Button component - resolve child reference and attach action handler
   if (type === 'Button') {
     componentProps.onAction = onAction;
+    
+    // Resolve title if it's a path binding
+    if (isPathBinding(props.title)) {
+      componentProps.title = resolveBinding(props.title, dataModel) ?? props.title;
+    }
     
     // Resolve child reference if present
     if (props.child) {
@@ -102,6 +120,7 @@ function renderComponent(componentDef, componentMap, formValues, onValueChange, 
           childDef,
           componentMap,
           formValues,
+          dataModel,
           onValueChange,
           onAction
         );
@@ -120,10 +139,11 @@ function renderComponent(componentDef, componentMap, formValues, onValueChange, 
  * @param {Object} props
  * @param {Object} props.structure - Validated VM2 structure with surfaceUpdate
  * @param {Object} props.formValues - Current form values from Zustand store
+ * @param {Object} props.dataModel - Data model for path-based bindings
  * @param {Function} props.onValueChange - Callback when form value changes (path, value)
  * @param {Function} props.onAction - Callback when button action is triggered (actionId)
  */
-export function VM2Renderer({ structure, formValues = {}, onValueChange, onAction }) {
+export function VM2Renderer({ structure, formValues = {}, dataModel = {}, onValueChange, onAction }) {
   // Validate structure
   if (!structure?.surfaceUpdate?.components) {
     return null;
@@ -159,6 +179,7 @@ export function VM2Renderer({ structure, formValues = {}, onValueChange, onActio
         componentDef,
         componentMap,
         formValues,
+        dataModel,
         onValueChange,
         onAction
       );

@@ -27,9 +27,11 @@ export default function Home() {
   // Zustand store state and actions
   const currentUI = useAgentStore((state) => state.currentUI);
   const formValues = useAgentStore((state) => state.formValues);
+  const dataModel = useAgentStore((state) => state.dataModel);
   const isLoading = useAgentStore((state) => state.isLoading);
   const setUI = useAgentStore((state) => state.setUI);
   const setFormValue = useAgentStore((state) => state.setFormValue);
+  const updateDataModel = useAgentStore((state) => state.updateDataModel);
   const setLoading = useAgentStore((state) => state.setLoading);
   const addToHistory = useAgentStore((state) => state.addToHistory);
   const resetToDefault = useAgentStore((state) => state.resetToDefault);
@@ -60,6 +62,10 @@ export default function Home() {
       if (data.success && data.ui) {
         // Replace default view with agent-generated UI (Requirement 10.2)
         setUI(data.ui);
+        // Update data model with tool execution results for path-based bindings
+        if (data.dataModel) {
+          updateDataModel(data.dataModel)
+        }
         // Update context for workflow continuity (Requirement 12.5)
         if (data.context) {
           setAgentContext(data.context);
@@ -110,6 +116,10 @@ export default function Home() {
       if (data.success && data.ui) {
         // Replace previous UI with new UI (Requirement 10.3)
         setUI(data.ui);
+        // Update data model with tool execution results for path-based bindings
+        if (data.dataModel) {
+          updateDataModel(data.dataModel)
+        }
         // Update context for workflow continuity (Requirement 12.5)
         if (data.context) {
           setAgentContext(data.context);
@@ -167,6 +177,7 @@ export default function Home() {
             <VM2Renderer
               structure={currentUI}
               formValues={formValues}
+              dataModel={dataModel}
               onValueChange={handleValueChange}
               onAction={handleAction}
             />

@@ -82,8 +82,11 @@ function validateActionRequest(body) {
  * Handles both user queries and form submissions
  */
 export async function POST(request) {
+  console.log('[DEBUG] API Route - Request received at:', new Date().toISOString());
+  
   try {
     const body = await request.json();
+    console.log('[DEBUG] API Route - Body parsed:', JSON.stringify(body, null, 2));
     
     // Determine request type based on presence of action_id
     const isFormSubmission = 'action_id' in body;
@@ -110,11 +113,23 @@ export async function POST(request) {
       
       const response = await agent.processAction(body.action_id, formData, context);
       
+      // Build dataModel from tool execution result for path-based bindings
+      // Flatten the structure so paths like "data.instances" work directly
+      let dataModel = undefined
+      if (response.toolResult) {
+        dataModel = {
+          // Allow both "toolExecutionResult.data.x" and "data.x" paths
+          toolExecutionResult: response.toolResult,
+          ...response.toolResult // Flatten: success, data, error, metadata at root
+        }
+      }
+
       return NextResponse.json({
         success: true,
         type: response.type,
         ui: response.ui,
-        context: response.context
+        context: response.context,
+        dataModel
       });
       
     } else {
@@ -133,10 +148,14 @@ export async function POST(request) {
         );
       }
       
+      console.log('[DEBUG] API Route - Creating agent...');
       const agent = createAgent();
+      console.log('[DEBUG] API Route - Agent created, processing query...');
       const context = body.context || {};
       
+      const startTime = Date.now();
       const response = await agent.process(body.query, context);
+      console.log('[DEBUG] API Route - Agent process completed in', Date.now() - startTime, 'ms');
       
       return NextResponse.json({
         success: true,

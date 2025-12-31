@@ -6,6 +6,7 @@ import { create } from 'zustand';
  * Manages:
  * - currentUI: The current VM2 component structure being rendered
  * - formValues: Form field values bound to component paths
+ * - dataModel: Reactive data model for path-based bindings (like A2UI's dataModelUpdate)
  * - history: Conversation/workflow history
  * - isLoading: Loading state during API requests
  * 
@@ -18,6 +19,10 @@ const useAgentStore = create((set, get) => ({
   // Form values bound to paths (Requirement 9.2)
   formValues: {},
 
+  // Data model for reactive path-based bindings
+  // Stores tool execution results and other dynamic data
+  dataModel: {},
+
   // Workflow context: conversation history and API responses (Requirement 9.4)
   history: [],
 
@@ -27,12 +32,52 @@ const useAgentStore = create((set, get) => ({
   /**
    * Set the current UI structure
    * Clears previous form values when UI is replaced (Requirement 9.5)
+   * Preserves dataModel for data continuity
    * @param {Object|null} ui - VM2 component structure or null
    */
   setUI: (ui) => set({ 
     currentUI: ui, 
     formValues: {} 
   }),
+
+  /**
+   * Update the data model (similar to A2UI's dataModelUpdate)
+   * Merges new data into existing model for reactive updates
+   * @param {Object} data - Data to merge into the model
+   */
+  updateDataModel: (data) => set((state) => ({
+    dataModel: {
+      ...state.dataModel,
+      ...data
+    }
+  })),
+
+  /**
+   * Set a specific path in the data model
+   * @param {string} path - Dot-notation path
+   * @param {any} value - Value to set
+   */
+  setDataModelValue: (path, value) => set((state) => {
+    const newModel = { ...state.dataModel }
+    const parts = path.split('.')
+    let current = newModel
+
+    for (let i = 0; i < parts.length - 1; i++) {
+      const part = parts[i]
+      if (!(part in current)) {
+        current[part] = {}
+      }
+      current = current[part]
+    }
+
+    current[parts[parts.length - 1]] = value
+    return { dataModel: newModel }
+  }),
+
+  /**
+   * Clear the data model
+   */
+  clearDataModel: () => set({ dataModel: {} }),
 
   /**
    * Update a form field value at the specified path (Requirement 9.3)
@@ -73,6 +118,7 @@ const useAgentStore = create((set, get) => ({
   resetToDefault: () => set({ 
     currentUI: null, 
     formValues: {}, 
+    dataModel: {},
     history: [] 
   }),
 

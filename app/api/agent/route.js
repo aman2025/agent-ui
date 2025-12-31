@@ -114,15 +114,9 @@ export async function POST(request) {
       const response = await agent.processAction(body.action_id, formData, context);
       
       // Build dataModel from tool execution result for path-based bindings
-      // Flatten the structure so paths like "data.instances" work directly
-      let dataModel = undefined
-      if (response.toolResult) {
-        dataModel = {
-          // Allow both "toolExecutionResult.data.x" and "data.x" paths
-          toolExecutionResult: response.toolResult,
-          ...response.toolResult // Flatten: success, data, error, metadata at root
-        }
-      }
+      // Structure: { data: {...}, success, error, metadata }
+      // LLM uses paths like "data.instances" to access the data
+      const dataModel = response.toolResult || undefined
 
       return NextResponse.json({
         success: true,
